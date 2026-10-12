@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<robot name="my_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:include filename="common_properties.xacro" />
+    <xacro:include filename="mobile_base.xacro" />
+    <xacro:include filename="mobile_base_gazebo.xacro" />
+
+    <xacro:arg name="with_depth_cameras" default="true" />
+    <xacro:arg name="with_rear_camera" default="true" />
+    <xacro:arg name="cam_width" default="320" />
+    <xacro:arg name="cam_height" default="240" />
+    <xacro:arg name="cam_rate" default="10.0" />
+    <xacro:arg name="cam_visualize" default="false" />
+    <xacro:arg name="cam_hfov" default="1.5" />
+    <xacro:arg name="cam_noise_stddev" default="0.001" />
+    <xacro:if value="$(arg with_depth_cameras)">
+        <xacro:include filename="camera.xacro" />
+    </xacro:if>
+
+    <xacro:include filename="lidar.xacro" />
+    <xacro:include filename="imu.xacro" />
+    <xacro:include filename="sonic_radar.xacro" />
+    <xacro:include filename="gps_module.xacro" />
+
+</robot>

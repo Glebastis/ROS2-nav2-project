@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <!-- 
+    ===== IMU ====== 
+    гравитация даёт тангаж и крен, поворот по гироскопу 
+    устойчивее визуальной/скановой одометрии 
+    -->
+
+    <link name="imu_link">
+        <visual>
+            <geometry><box size="0.03 0.03 0.01"/></geometry>
+            <material name="red"/>
+        </visual>
+        <collision>
+            <geometry><box size="0.03 0.03 0.01"/></geometry>
+        </collision>
+        <xacro:box_inertia m="0.01" l="0.03" w="0.03" h="0.01" xyz="0 0 0" rpy="0 0 0"/>
+    </link>
+
+    <joint name="base_imu_joint" type="fixed">
+        <parent link="base_link"/>
+        <child link="imu_link"/>
+        <origin xyz="0 0 ${base_height / 2.0}" rpy="0 0 0"/>
+    </joint>
+
+    <gazebo reference="imu_link">
+        <sensor name="imu_sensor" type="imu">
+            <always_on>true</always_on>
+            <update_rate>100</update_rate>
+            <visualize>true</visualize>
+            <plugin name="imu_plugin" filename="libgazebo_ros_imu_sensor.so">
+                <ros>
+                    <remapping>~/out:=/imu/data</remapping>
+                </ros>
+                <initial_orientation_as_reference>false</initial_orientation_as_reference>
+            </plugin>
+        </sensor>
+    </gazebo>
+
+</robot>

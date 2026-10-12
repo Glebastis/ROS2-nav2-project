@@ -1,0 +1,156 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:property name="camera_length" value="0.01" />
+    <xacro:property name="camera_width" value="0.1" />
+    <xacro:property name="camera_height" value="0.05" />
+    <!-- Шум глубины включается только при явно заданном stddev. При нулевом
+         значении блок noise ломает depth-камеру в Gazebo Classic. -->
+    <xacro:property name="noise_on" value="${float('$(arg cam_noise_stddev)') > 0.0}" />
+
+    <link name="camera_link">
+        <visual>
+            <geometry>
+                <box size="${camera_length} ${camera_width} ${camera_height}" />
+            </geometry>
+            <material name="grey" />
+        </visual>
+        <collision>
+            <geometry>
+                <box size="${camera_length} ${camera_width} ${camera_height}" />
+            </geometry>
+        </collision>
+        <xacro:box_inertia m="0.1" l="${camera_length}" w="${camera_width}" h="${camera_height}"
+                           xyz="0 0 0" rpy="0 0 0" />
+    </link>
+
+    <joint name="base_camera_joint" type="fixed">
+        <parent link="base_link" />
+        <child link="camera_link" />
+        <origin xyz="${(base_length + camera_length) / 2.0} 0 ${base_height / 2.0}" rpy="0 0 0" />
+    </joint>
+
+    <link name="camera_link_optical">
+        <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <mass value="0.001" />
+        <inertia ixx="1e-9" ixy="0" ixz="0"
+                 iyy="1e-9" iyz="0"
+                 izz="1e-9" />
+        </inertial>
+    </link>
+
+    <joint name="camera_optical_joint" type="fixed">
+        <!-- these values have to be these values otherwise the gazebo camera
+            image won't be aligned properly with the frame it is supposedly
+            originating from -->
+        <origin xyz="0 0 0" rpy="${-pi/2} 0 ${-pi/2}"/>
+        <parent link="camera_link"/>
+        <child link="camera_link_optical"/>
+    </joint>
+
+    <gazebo reference="camera_link">
+        <material>Gazebo/Grey</material>
+        <sensor name="depth_camera" type="depth">
+            <visualize>$(arg cam_visualize)</visualize>
+            <update_rate>$(arg cam_rate)</update_rate>
+            <camera>
+                <horizontal_fov>$(arg cam_hfov)</horizontal_fov>
+                <image>
+                    <width>$(arg cam_width)</width>
+                    <height>$(arg cam_height)</height>
+                    <format>R8G8B8</format>
+                </image>
+                <clip>
+                    <near>0.05</near>
+                    <far>6.0</far>
+                </clip>
+                <xacro:if value="${noise_on}">
+                    <noise>
+                        <type>gaussian</type>
+                        <mean>0.0</mean>
+                        <stddev>$(arg cam_noise_stddev)</stddev>
+                    </noise>
+                </xacro:if>
+            </camera>
+            <plugin name="depth_camera_controller" filename="libgazebo_ros_camera.so">
+                <frame_name>camera_link_optical</frame_name>
+                <pointCloudCutoff>0.3</pointCloudCutoff>
+                <pointCloudCutoffMax>6.0</pointCloudCutoffMax>
+            </plugin>
+        </sensor>
+    </gazebo>
+
+
+    <xacro:if value="$(arg with_rear_camera)">
+    <!-- ===== вторая depth-камера, смотрит назад =====  -->
+    <link name="camera_rear_link">
+        <visual>
+            <geometry>
+                <box size="${camera_length} ${camera_width} ${camera_height}" />
+            </geometry>
+            <material name="grey" />
+        </visual>
+        <collision>
+            <geometry>
+                <box size="${camera_length} ${camera_width} ${camera_height}" />
+            </geometry>
+        </collision>
+        <xacro:box_inertia m="0.1" l="${camera_length}" w="${camera_width}" h="${camera_height}"
+                           xyz="0 0 0" rpy="0 0 0" />
+    </link>
+
+    <joint name="base_camera_rear_joint" type="fixed">
+        <parent link="base_link" />
+        <child link="camera_rear_link" />
+        <origin xyz="${-(base_length + camera_length) / 2.0} 0 ${base_height / 2.0}"
+                rpy="0 0 ${pi}" />
+    </joint>
+
+    <link name="camera_rear_link_optical">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0.001" />
+            <inertia ixx="1e-9" ixy="0" ixz="0" iyy="1e-9" iyz="0" izz="1e-9" />
+        </inertial>
+    </link>
+
+    <joint name="camera_rear_optical_joint" type="fixed">
+        <origin xyz="0 0 0" rpy="${-pi/2} 0 ${-pi/2}"/>
+        <parent link="camera_rear_link"/>
+        <child link="camera_rear_link_optical"/>
+    </joint>
+
+    <gazebo reference="camera_rear_link">
+        <material>Gazebo/Grey</material>
+        <sensor name="depth_camera_rear" type="depth">
+            <visualize>$(arg cam_visualize)</visualize>
+            <update_rate>$(arg cam_rate)</update_rate>
+            <camera>
+                <horizontal_fov>$(arg cam_hfov)</horizontal_fov>
+                <image>
+                    <width>$(arg cam_width)</width>
+                    <height>$(arg cam_height)</height>
+                    <format>R8G8B8</format>
+                </image>
+                <clip>
+                    <near>0.05</near>
+                    <far>6.0</far>
+                </clip>
+                <xacro:if value="${noise_on}">
+                    <noise>
+                        <type>gaussian</type>
+                        <mean>0.0</mean>
+                        <stddev>$(arg cam_noise_stddev)</stddev>
+                    </noise>
+                </xacro:if>
+            </camera>
+            <plugin name="depth_camera_rear_controller" filename="libgazebo_ros_camera.so">
+                <frame_name>camera_rear_link_optical</frame_name>
+                <pointCloudCutoff>0.3</pointCloudCutoff>
+                <pointCloudCutoffMax>6.0</pointCloudCutoffMax>
+            </plugin>
+        </sensor>
+    </gazebo>
+    </xacro:if>
+</robot>

@@ -1,0 +1,45 @@
+<launch>
+    <arg name="impl" default="py" description="py or cpp"/>
+    <arg name="use_sim_time" default="true" />
+    <arg name="params_file"
+         default="$(find-pkg-share my_robot_bringup)/config/nav2_params.yaml" />
+    <arg name="waypoints"
+         default="[0.0, 0.0, 2.5, -1.5, 5.0, 1.5, 10.0, 0.0]" />
+
+    <!-- 1. Gazebo + SLAM + RViz -->
+    <include file="$(find-pkg-share my_robot_bringup)/launch/my_robot_gazebo.launch.xml">
+        <arg name="gui" value="true" />
+        <arg name="rviz" value="true" />
+        <arg name="start_slam" value="true" />
+        <arg name="scan_topic" value="/scan_lidar" />
+    </include>
+
+    <!-- <include file="$(find-pkg-share nav2_bringup)/launch/slam_launch.py">
+        <arg name="use_sim_time" value="$(var use_sim_time)" />
+        <arg name="params_file" value="$(var params_file)" />
+        <arg name="slam_params_file"
+            value="$(find-pkg-share my_robot_bringup)/config/slam_params.yaml" />
+    </include> -->
+
+    <!-- 2. Nav2 -->
+    <include file="$(find-pkg-share nav2_bringup)/launch/navigation_launch.py">
+        <arg name="use_sim_time" value="$(var use_sim_time)" />
+        <arg name="params_file" value="$(var params_file)" />
+    </include>
+
+    <!-- 3. Waypoint follower (с задержкой, чтобы Nav2 успел подняться) -->
+    <timer period="15.0">
+        <group if="$(eval '\'$(var impl)\' == \'py\'')">
+            <node pkg="waypoint_py" exec="waypoint_follower" name="waypoint_follower" output="screen">
+                <param name="use_sim_time" value="true"/>
+                <param name="waypoints" value="$(var waypoints)"/>
+            </node>
+        </group>
+        <group if="$(eval '\'$(var impl)\' == \'cpp\'')">
+            <node pkg="waypoint_cpp" exec="waypoint_follower_cpp" name="waypoint_follower" output="screen">
+                <param name="use_sim_time" value="true"/>
+                <param name="waypoints" value="$(var waypoints)"/>
+            </node>
+        </group>
+    </timer>
+</launch>

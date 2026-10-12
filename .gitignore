@@ -1,0 +1,8 @@
+launch.txt
+pycache/
+*.pyc
+build/
+install/
+log/
+.vscode/
+src/data/demo_output
