@@ -82,8 +82,10 @@ sudo apt install ros-humble-desktop ros-humble-nav2-bringup \
 cd ~/ROS2-nav2-project
 colcon build --symlink-install
 source install/setup.bash
+```
+
 Быстрый старт (одной командой)
-bash
+```bash
 cd ~/ROS2-nav2-project
 source install/setup.bash
 ros2 launch my_robot_bringup bringup.launch.xml
