@@ -109,7 +109,6 @@ ros2 launch my_robot_bringup bringup.launch.xml impl:=cpp
 ros2 launch my_robot_bringup bringup.launch.xml \
   waypoints:="[0.0,0.0, 3.0,-2.0, 7.0,2.0, 10.0,0.0]"
 ```
-Параметры через env:
 
 Топики
 
