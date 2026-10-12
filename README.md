@@ -6,7 +6,7 @@
 Orbbec Astra), ультразвуковые дальномеры, GPS, IMU. Целевое железо —
 Raspberry Pi 5.
 
-![demo](data/demo.gif)
+![demo](src/data/demo.gif)
 
 ## Стек
 
